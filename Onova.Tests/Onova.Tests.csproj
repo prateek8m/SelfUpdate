@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../Onova.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <CollectCoverage>true</CollectCoverage>
+    <CoverletOutputFormat>opencover</CoverletOutputFormat>
+    <CoverletOutput>bin/$(Configuration)/Coverage.xml</CoverletOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CliWrap" Version="3.0.0" />
+    <PackageReference Include="FluentAssertions" Version="5.10.3" />
+    <PackageReference Include="GitHubActionsTestLogger" Version="1.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
+    <PackageReference Include="Mono.Cecil" Version="0.11.2" />
+    <PackageReference Include="coverlet.msbuild" Version="2.8.1" PrivateAssets="all" />
+    <PackageReference Include="Polly" Version="7.2.0" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Onova\Onova.csproj" />
+    <ProjectReference Include="..\Onova.Tests.Dummy\Onova.Tests.Dummy.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../Onova.Tests.Dummy/bin/$(Configuration)/$(TargetFramework)/Onova.Tests.Dummy.runtimeconfig.json">
+      <Link>Onova.Tests.Dummy.runtimeconfig.json</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>False</Visible>
+    </None>
+  </ItemGroup>
+
+</Project>
