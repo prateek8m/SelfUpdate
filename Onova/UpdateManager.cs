@@ -19,7 +19,7 @@ namespace Onova
     /// </summary>
     public class UpdateManager : IUpdateManager
     {
-        private const string UpdaterResourceName = "Onova.Updater.dll";
+        private const string UpdaterResourceName = "Onova.Updater.exe";
 
         private readonly IPackageResolver _resolver;
         private readonly IPackageExtractor _extractor;
@@ -39,6 +39,7 @@ namespace Onova
         /// </summary>
         public UpdateManager(AssemblyMetadata updatee, IPackageResolver resolver, IPackageExtractor extractor)
         {
+            //pk
             //Platform.EnsureWindows();
 
             Updatee = updatee;
@@ -51,10 +52,13 @@ namespace Onova
                 "Onova", updatee.Name);
 
             // Set updater executable file path
-            //_updaterFilePath = Path.Combine(_storageDirPath, $"{updatee.Name}.Updater.exe");
-
-            _updaterFilePath = Path.Combine(_storageDirPath, $"{updatee.Name}.Updater.dll");
-
+            //pk
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                _updaterFilePath = Path.Combine(_storageDirPath, $"{updatee.Name}.Updater.exe");
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                _updaterFilePath = Path.Combine(_storageDirPath, $"{updatee.Name}.Updater.dll");
+            else
+                throw new Exception("unknown platform");
 
             // Set lock file path
             _lockFilePath = Path.Combine(_storageDirPath, "Onova.lock");
@@ -154,12 +158,17 @@ namespace Onova
                     var packageContentDirName = Path.GetFileName(packageContentDirPath);
 
                     // Try to extract version out of the name
-                    if (packageContentDirName == null || !Version.TryParse(packageContentDirName, out var version))
+                    if (string.IsNullOrWhiteSpace(packageContentDirName) ||
+                        !Version.TryParse(packageContentDirName, out var version))
+                    {
                         continue;
+                    }
 
                     // If this package is prepared - add it to the list
                     if (IsUpdatePrepared(version))
+                    {
                         result.Add(version);
+                    }
                 }
             }
 
@@ -202,11 +211,7 @@ namespace Onova
             File.Delete(packageFilePath);
 
             // Extract updater
-
-
-            //await Assembly.GetExecutingAssembly().ExtractManifestResourceAsync(UpdaterResourceName, _updaterFilePath);
-            await Assembly.GetExecutingAssembly().ExtractManifestResourceAsync(UpdaterResourceName, _storageDirPath);
-
+            await Assembly.GetExecutingAssembly().ExtractManifestResourceAsync(UpdaterResourceName, _updaterFilePath);
         }
 
         /// <inheritdoc />
@@ -216,7 +221,7 @@ namespace Onova
             EnsureNotDisposed();
             EnsureLockFileAcquired();
             EnsureUpdaterNotLaunched();
-            EnsureUpdatePrepared(version);
+           // EnsureUpdatePrepared(version);
 
             // Get package content directory path
             var packageContentDirPath = GetPackageContentDirPath(version);
@@ -232,20 +237,14 @@ namespace Onova
             var isUpdaterElevated = !string.IsNullOrWhiteSpace(updateeDirPath) && !DirectoryEx.CheckWriteAccess(updateeDirPath);
 
             // Create updater process start info
-            var updaterStartInfo = new ProcessStartInfo();
+            var updaterStartInfo = new ProcessStartInfo
+            {
+                FileName = _updaterFilePath,
+                Arguments = updaterArgs,
+                CreateNoWindow = true,
+                UseShellExecute = false
+            };
 
-            if(!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                updaterStartInfo.FileName = _updaterFilePath;
-                updaterStartInfo.Arguments = updaterArgs;
-                updaterStartInfo.CreateNoWindow = true;
-                updaterStartInfo.UseShellExecute = false;
-            }
-            else
-            {
-                updaterStartInfo.FileName = "dotnet";
-                updaterStartInfo.Arguments = $"{_updaterFilePath} {updaterArgs}";
-            }
             // If updater needs to be elevated - use shell execute with "runas"
             if (isUpdaterElevated)
             {
@@ -254,7 +253,7 @@ namespace Onova
             }
 
             // Create and start updater process
-            var updaterProcess = new Process {StartInfo = updaterStartInfo};
+            var updaterProcess = new Process { StartInfo = updaterStartInfo };
             using (updaterProcess)
                 updaterProcess.Start();
         }
