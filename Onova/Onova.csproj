@@ -2,7 +2,8 @@
   <Import Project="../Onova.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net461;netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net461;netcoreapp3.1</TargetFrameworks>
+    <RuntimeIdentifiers>win;osx-x64;</RuntimeIdentifiers>
     <Authors>$(Company)</Authors>
     <Description>Compact and extensible auto-update library</Description>
     <PackageTags>auto update</PackageTags>
@@ -38,37 +39,35 @@
   <ItemGroup>
     <None Include="../favicon.png" Pack="True" PackagePath="" />
   </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="../Onova.Updater/bin/$(Configuration)/netcoreapp3.0/Onova.Updater.exe">
+    
+    <ItemGroup Condition=" '$(RuntimeIdentifiers)' == 'win'">
+        <EmbeddedResource Include="../Onova.Updater/bin/$(Configuration)/netcoreapp3.1/Onova.Updater.exe">
       <Link>Updater.exe</Link>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <Visible>False</Visible>
     </EmbeddedResource>
+    </ItemGroup>
 
-    <EmbeddedResource Include="../Onova.Updater/bin/$(Configuration)/netcoreapp3.0/Onova.Updater.dll">
+  <ItemGroup>
+    <EmbeddedResource Include="../Onova.Updater/bin/$(Configuration)/netcoreapp3.1/Onova.Updater.dll">
       <Link>Updater.dll</Link>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <Visible>False</Visible>
     </EmbeddedResource>
 
-    <EmbeddedResource Include="../Onova.Updater/bin/$(Configuration)/netcoreapp3.0/Onova.Updater.deps.json">
-    <!--//  <Link>Updater.dll</Link>-->
+    <EmbeddedResource Include="../Onova.Updater/bin/$(Configuration)/netcoreapp3.1/Onova.Updater.deps.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <Visible>False</Visible>
     </EmbeddedResource>
-    <EmbeddedResource Include="../Onova.Updater/bin/$(Configuration)/netcoreapp3.0/Onova.Updater.runtimeconfig.json">
-      <!--<Link>Updater.dll</Link>-->
+    <EmbeddedResource Include="../Onova.Updater/bin/$(Configuration)/netcoreapp3.1/Onova.Updater.runtimeconfig.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <Visible>False</Visible>
     </EmbeddedResource>
-    <EmbeddedResource Include="../Onova.Updater/bin/$(Configuration)/netcoreapp3.0/Onova.Updater.runtimeconfig.dev.json">
-      <!--<Link>Updater.dll</Link>-->
+    <EmbeddedResource Include="../Onova.Updater/bin/$(Configuration)/netcoreapp3.1/Onova.Updater.runtimeconfig.dev.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <Visible>False</Visible>
     </EmbeddedResource>
-    <EmbeddedResource Include="../Onova.Updater/bin/$(Configuration)/netcoreapp3.0/Onova.Updater.pdb">
-      <!--<Link>Updater.dll</Link>-->
+    <EmbeddedResource Include="../Onova.Updater/bin/$(Configuration)/netcoreapp3.1/Onova.Updater.pdb">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <Visible>False</Visible>
     </EmbeddedResource>

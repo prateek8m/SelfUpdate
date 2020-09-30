@@ -19,7 +19,17 @@ namespace Onova
     /// </summary>
     public class UpdateManager : IUpdateManager
     {
-        private const string UpdaterResourceName = "Onova.Updater.exe";
+        private  string UpdaterResourceName {
+            get
+            {
+                if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    return "Onova.Updater.exe";
+                else
+                    return "Onova.Updater.dll";
+            }
+
+            
+    }
 
         private readonly IPackageResolver _resolver;
         private readonly IPackageExtractor _extractor;
@@ -54,9 +64,13 @@ namespace Onova
             // Set updater executable file path
             //pk
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                _updaterFilePath = Path.Combine(_storageDirPath, $"{updatee.Name}.Updater.exe");
+                //_updaterFilePath = Path.Combine(_storageDirPath, $"{updatee.Name}.Updater.exe");
+                _updaterFilePath = Path.Combine(_storageDirPath, $"{updatee.Name}");
+
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                _updaterFilePath = Path.Combine(_storageDirPath, $"{updatee.Name}.Updater.dll");
+                //_updaterFilePath = Path.Combine(_storageDirPath, $"{updatee.Name}.Updater.dll");
+                _updaterFilePath = Path.Combine(_storageDirPath, $"{updatee.Name}");
+
             else
                 throw new Exception("unknown platform");
 
@@ -221,7 +235,7 @@ namespace Onova
             EnsureNotDisposed();
             EnsureLockFileAcquired();
             EnsureUpdaterNotLaunched();
-           // EnsureUpdatePrepared(version);
+            EnsureUpdatePrepared(version);
 
             // Get package content directory path
             var packageContentDirPath = GetPackageContentDirPath(version);
