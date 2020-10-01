@@ -49,31 +49,26 @@
     
     <EmbeddedResource Include="../Onova.Updater/bin/$(Configuration)/netcoreapp3.1/Onova.Updater.dll">
       <Link>Updater.dll</Link>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <Visible>False</Visible>
     </EmbeddedResource>
 
     <EmbeddedResource Include="../Onova.Updater/bin/$(Configuration)/netcoreapp3.1/Onova.Updater.deps.json">
       <Link>Updater.deps.json</Link>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <Visible>False</Visible>
     </EmbeddedResource>
     
     <EmbeddedResource Include="../Onova.Updater/bin/$(Configuration)/netcoreapp3.1/Onova.Updater.runtimeconfig.json">
       <Link>Updater.runtimeconfig.json</Link>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <Visible>False</Visible>
     </EmbeddedResource>
     
     <EmbeddedResource Include="../Onova.Updater/bin/$(Configuration)/netcoreapp3.1/Onova.Updater.runtimeconfig.dev.json">
       <Link>Updater.runtimeconfig.dev.json</Link>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <Visible>False</Visible>
     </EmbeddedResource>
     
     <EmbeddedResource Include="../Onova.Updater/bin/$(Configuration)/netcoreapp3.1/Onova.Updater.pdb">
       <Link>Updater.pdb</Link>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <Visible>False</Visible>
     </EmbeddedResource>
   </ItemGroup>
