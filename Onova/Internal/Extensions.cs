@@ -68,16 +68,10 @@ namespace Onova.Internal
             {
                 var input = assembly.GetManifestResourceStream(item) ??
                         throw new MissingManifestResourceException($"Could not find resource [{item}].");
-               // string temp=item.Replace("Onova.Onova", "");
-               // temp=temp.Replace("Onova", "");
                 using var output = File.Create(destFilePath+"/"+item);
                 await input.CopyToAsync(output);
             }
-            //var input = assembly.GetManifestResourceStream(resourceName) ??
-            //            throw new MissingManifestResourceException($"Could not find resource [{resourceName}].");
-
-            //using var output = File.Create(destFilePath);
-            //await input.CopyToAsync(output);
+           
         }
     }
 }

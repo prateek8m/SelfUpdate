@@ -19,17 +19,7 @@ namespace Onova
     /// </summary>
     public class UpdateManager : IUpdateManager
     {
-        private  string UpdaterResourceName {
-            get
-            {
-                if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                    return "Onova.Updater.exe";
-                else
-                    return "Onova.Updater.dll";
-            }
-
-            
-    }
+        private readonly string UpdaterResourceName = "Onova.Updater.dll";
 
         private readonly IPackageResolver _resolver;
         private readonly IPackageExtractor _extractor;
@@ -49,8 +39,7 @@ namespace Onova
         /// </summary>
         public UpdateManager(AssemblyMetadata updatee, IPackageResolver resolver, IPackageExtractor extractor)
         {
-            //pk
-            //Platform.EnsureWindows();
+            Platform.EnsureWindowsOrMac();
 
             Updatee = updatee;
             _resolver = resolver;
@@ -60,19 +49,6 @@ namespace Onova
             _storageDirPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "Onova", updatee.Name);
-
-            // Set updater executable file path
-            //pk
-            //if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            //    //_updaterFilePath = Path.Combine(_storageDirPath, $"{updatee.Name}.Updater.exe");
-            //    _updaterFilePath = Path.Combine(_storageDirPath, "Onova.Updater.dll");
-
-            //else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            //    //_updaterFilePath = Path.Combine(_storageDirPath, $"{updatee.Name}.Updater.dll");
-            //    _updaterFilePath = Path.Combine(_storageDirPath, "Onova.Updater.dll");
-
-            //else
-            //    throw new Exception("unknown platform");
 
             _updaterFilePath = Path.Combine(_storageDirPath, "Onova.Updater.dll");
 
@@ -237,9 +213,7 @@ namespace Onova
             EnsureNotDisposed();
             EnsureLockFileAcquired();
             EnsureUpdaterNotLaunched();
-
-            //pk
-            //EnsureUpdatePrepared(version);
+            EnsureUpdatePrepared(version);
 
             // Get package content directory path
             var packageContentDirPath = GetPackageContentDirPath(version);
@@ -253,22 +227,6 @@ namespace Onova
             // Decide if updater needs to be elevated
             var updateeDirPath = Path.GetDirectoryName(Updatee.FilePath);
             var isUpdaterElevated = !string.IsNullOrWhiteSpace(updateeDirPath) && !DirectoryEx.CheckWriteAccess(updateeDirPath);
-
-            // Create updater process start info
-            //var updaterStartInfo = new ProcessStartInfo
-            //{
-            //    FileName = _updaterFilePath,
-            //    Arguments = updaterArgs,
-            //    CreateNoWindow = false,
-            //    UseShellExecute = false
-            //};
-
-            // If updater needs to be elevated - use shell execute with "runas"
-            //if (isUpdaterElevated)
-            //{
-            //    updaterStartInfo.Verb = "runas";
-            //    updaterStartInfo.UseShellExecute = true;
-            //}
 
             #region try
 
@@ -310,15 +268,11 @@ namespace Onova
                     }
                 }
 
-               // using var restartedUpdateeProcess = Process.Start(updaterStartInfo);
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                
                 updaterStartInfo.FileName = "dotnet";
                 updaterStartInfo.Arguments = $"{_updaterFilePath} {updaterArgs}";
-               // using var restartedUpdateeProcess = Process.Start(updaterStartInfo);
-
             }
             else
             {

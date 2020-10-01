@@ -39,17 +39,8 @@
   <ItemGroup>
     <None Include="../favicon.png" Pack="True" PackagePath="" />
   </ItemGroup>
-    
-    <!--<ItemGroup Condition=" '$(RuntimeIdentifier)' == 'win-x64'">
-      <EmbeddedResource Include="../Onova.Updater/bin/$(Configuration)/netcoreapp3.1/Onova.Updater.exe">
-      <Link>Updater.exe</Link>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      <Visible>False</Visible>
-    </EmbeddedResource>
-    </ItemGroup>-->
-
+  
   <ItemGroup>
-
     <!--<EmbeddedResource Include="../Onova.Updater/bin/$(Configuration)/netcoreapp3.1/Onova.Updater.exe">
       <Link>Updater.exe</Link>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
