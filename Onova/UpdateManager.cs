@@ -63,16 +63,18 @@ namespace Onova
 
             // Set updater executable file path
             //pk
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                //_updaterFilePath = Path.Combine(_storageDirPath, $"{updatee.Name}.Updater.exe");
-                _updaterFilePath = Path.Combine(_storageDirPath, $"{updatee.Name}");
+            //if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            //    //_updaterFilePath = Path.Combine(_storageDirPath, $"{updatee.Name}.Updater.exe");
+            //    _updaterFilePath = Path.Combine(_storageDirPath, "Onova.Updater.dll");
 
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                //_updaterFilePath = Path.Combine(_storageDirPath, $"{updatee.Name}.Updater.dll");
-                _updaterFilePath = Path.Combine(_storageDirPath, $"{updatee.Name}");
+            //else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            //    //_updaterFilePath = Path.Combine(_storageDirPath, $"{updatee.Name}.Updater.dll");
+            //    _updaterFilePath = Path.Combine(_storageDirPath, "Onova.Updater.dll");
 
-            else
-                throw new Exception("unknown platform");
+            //else
+            //    throw new Exception("unknown platform");
+
+            _updaterFilePath = Path.Combine(_storageDirPath, "Onova.Updater.dll");
 
             // Set lock file path
             _lockFilePath = Path.Combine(_storageDirPath, "Onova.lock");
@@ -225,7 +227,7 @@ namespace Onova
             File.Delete(packageFilePath);
 
             // Extract updater
-            await Assembly.GetExecutingAssembly().ExtractManifestResourceAsync(UpdaterResourceName, _updaterFilePath);
+            await Assembly.GetExecutingAssembly().ExtractManifestResourceAsync(UpdaterResourceName, _storageDirPath);
         }
 
         /// <inheritdoc />
@@ -235,7 +237,9 @@ namespace Onova
             EnsureNotDisposed();
             EnsureLockFileAcquired();
             EnsureUpdaterNotLaunched();
-            EnsureUpdatePrepared(version);
+
+            //pk
+            //EnsureUpdatePrepared(version);
 
             // Get package content directory path
             var packageContentDirPath = GetPackageContentDirPath(version);
@@ -251,20 +255,77 @@ namespace Onova
             var isUpdaterElevated = !string.IsNullOrWhiteSpace(updateeDirPath) && !DirectoryEx.CheckWriteAccess(updateeDirPath);
 
             // Create updater process start info
+            //var updaterStartInfo = new ProcessStartInfo
+            //{
+            //    FileName = _updaterFilePath,
+            //    Arguments = updaterArgs,
+            //    CreateNoWindow = false,
+            //    UseShellExecute = false
+            //};
+
+            // If updater needs to be elevated - use shell execute with "runas"
+            //if (isUpdaterElevated)
+            //{
+            //    updaterStartInfo.Verb = "runas";
+            //    updaterStartInfo.UseShellExecute = true;
+            //}
+
+            #region try
+
             var updaterStartInfo = new ProcessStartInfo
             {
                 FileName = _updaterFilePath,
                 Arguments = updaterArgs,
-                CreateNoWindow = true,
+                CreateNoWindow = false,
                 UseShellExecute = false
             };
 
-            // If updater needs to be elevated - use shell execute with "runas"
             if (isUpdaterElevated)
             {
                 updaterStartInfo.Verb = "runas";
                 updaterStartInfo.UseShellExecute = true;
             }
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                
+                // If updatee is an .exe file - start it directly
+                if (string.Equals(Path.GetExtension(_updaterFilePath), ".exe", StringComparison.OrdinalIgnoreCase))
+                {
+                    updaterStartInfo.FileName = _updaterFilePath;
+                }
+                // If not - figure out what to do with it
+                else
+                {
+                    // If there's an .exe file with same name - start it instead
+                    // Security vulnerability?
+                    if (File.Exists(Path.ChangeExtension(_updaterFilePath, ".exe")))
+                    {
+                        updaterStartInfo.FileName = Path.ChangeExtension(_updaterFilePath, ".exe");
+                    }
+                    // Otherwise - start the updatee using dotnet SDK
+                    else
+                    {
+                        updaterStartInfo.FileName = "dotnet";
+                        updaterStartInfo.Arguments = $"{_updaterFilePath} {updaterArgs}";
+                    }
+                }
+
+               // using var restartedUpdateeProcess = Process.Start(updaterStartInfo);
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                
+                updaterStartInfo.FileName = "dotnet";
+                updaterStartInfo.Arguments = $"{_updaterFilePath} {updaterArgs}";
+               // using var restartedUpdateeProcess = Process.Start(updaterStartInfo);
+
+            }
+            else
+            {
+                throw new Exception("platform unknown");
+            }
+
+            #endregion
 
             // Create and start updater process
             var updaterProcess = new Process { StartInfo = updaterStartInfo };
