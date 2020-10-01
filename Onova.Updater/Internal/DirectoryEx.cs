@@ -9,6 +9,7 @@ namespace Onova.Updater.Internal
             Directory.CreateDirectory(destDirPath);
 
             // Get all files in source directory
+            Updater.WriteLog("SourceDirPth: "+ sourceDirPath);
             var sourceFilePaths = Directory.EnumerateFiles(sourceDirPath);
 
             // Copy them
