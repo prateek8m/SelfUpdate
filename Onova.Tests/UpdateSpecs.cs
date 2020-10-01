@@ -254,5 +254,58 @@ namespace Onova.Tests
             // Assert
             dummy.GetLastRunArguments(expectedFinalVersion).Should().BeEquivalentTo(args);
         }
+
+        [Fact(Timeout=10000)]
+        public async Task completetest()
+        {
+                var res = await IsUpdateAvailable();
+            if(res.LastVersion != null)
+            await DoUpdate(res.LastVersion.ToString());
+        }
+
+        public async Task<CheckForUpdatesResult> IsUpdateAvailable()
+        {
+            HttpClient httpClient = new HttpClient();
+            string apiBaseAddress = "https://api.github.factset.com";
+            string repoOwner = "mdts";
+            string repoName = "environments-cmdrunner-netcore";
+            string namePattern = "*.zip";
+            using var manager = new UpdateManager(
+                new GithubPackageResolver(httpClient, apiBaseAddress, repoOwner, repoName, namePattern),
+                    new ZipPackageExtractor());
+
+            return await manager.CheckForUpdatesAsync();
+        }
+
+        internal async Task DoUpdate(string version)
+        {
+            
+            HttpClient httpClient = new HttpClient();
+            string apiBaseAddress = "https://api.github.factset.com";
+            string repoOwner = "mdts";
+            string repoName = "environments-cmdrunner-netcore";
+            string namePattern = "*.zip";
+            using var manager = new UpdateManager(
+                new GithubPackageResolver(httpClient, apiBaseAddress, repoOwner, repoName, namePattern),
+                    new ZipPackageExtractor());
+
+            try
+            {
+                //var test = await manager.CheckForUpdatesAsync();
+                await manager.PrepareUpdateAsync(Version.Parse(version));
+                manager.LaunchUpdater(Version.Parse(version), false);
+                Environment.Exit(0);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+            finally
+            {
+                httpClient.Dispose();
+            }
+        }
     }
+
+
 }

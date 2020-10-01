@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using Onova.Updater.Internal;
 
@@ -14,7 +15,7 @@ namespace Onova.Updater
         private readonly bool _restartUpdatee;
         private readonly string _routedArgs;
 
-        private readonly TextWriter _log = File.CreateText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Log.txt"));
+        private static readonly TextWriter _log = File.CreateText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Log.txt"));
 
         public Updater(string updateeFilePath, string packageContentDirPath, bool restartUpdatee, string routedArgs)
         {
@@ -24,7 +25,7 @@ namespace Onova.Updater
             _routedArgs = routedArgs;
         }
 
-        private void WriteLog(string content)
+        public static void WriteLog(string content)
         {
             var date = DateTimeOffset.Now;
             _log.WriteLine($"{date:dd-MMM-yyyy HH:mm:ss.fff}> {content}");
@@ -47,39 +48,64 @@ namespace Onova.Updater
             // Restart updatee if requested
             if (_restartUpdatee)
             {
-                var startInfo = new ProcessStartInfo
+                if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    WorkingDirectory = updateeDirPath,
-                    Arguments = _routedArgs,
-                    UseShellExecute = true // avoid sharing console window with updatee
-                };
-
-                // If updatee is an .exe file - start it directly
-                if (string.Equals(Path.GetExtension(_updateeFilePath), ".exe", StringComparison.OrdinalIgnoreCase))
-                {
-                    startInfo.FileName = _updateeFilePath;
-                }
-                // If not - figure out what to do with it
-                else
-                {
-                    // If there's an .exe file with same name - start it instead
-                    // Security vulnerability?
-                    if (File.Exists(Path.ChangeExtension(_updateeFilePath, ".exe")))
+                    var startInfo = new ProcessStartInfo
                     {
-                        startInfo.FileName = Path.ChangeExtension(_updateeFilePath, ".exe");
+                        WorkingDirectory = updateeDirPath,
+                        Arguments = _routedArgs,
+                        UseShellExecute = true // avoid sharing console window with updatee
+                    };
+
+                    // If updatee is an .exe file - start it directly
+                    if (string.Equals(Path.GetExtension(_updateeFilePath), ".exe", StringComparison.OrdinalIgnoreCase))
+                    {
+                        startInfo.FileName = _updateeFilePath;
                     }
-                    // Otherwise - start the updatee using dotnet SDK
+                    // If not - figure out what to do with it
                     else
                     {
-                        startInfo.FileName = "dotnet";
-                        startInfo.Arguments = $"{_updateeFilePath} {_routedArgs}";
+                        // If there's an .exe file with same name - start it instead
+                        // Security vulnerability?
+                        if (File.Exists(Path.ChangeExtension(_updateeFilePath, ".exe")))
+                        {
+                            startInfo.FileName = Path.ChangeExtension(_updateeFilePath, ".exe");
+                        }
+                        // Otherwise - start the updatee using dotnet SDK
+                        else
+                        {
+                            startInfo.FileName = "dotnet";
+                            startInfo.Arguments = $"{_updateeFilePath} {_routedArgs}";
+                        }
                     }
+
+                    WriteLog($"Restarting updatee [{startInfo.FileName} {startInfo.Arguments}]...");
+
+                    using var restartedUpdateeProcess = Process.Start(startInfo);
+                    WriteLog($"Restarted as pid:{restartedUpdateeProcess?.Id}.");
                 }
+                else if(RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    var startInfo = new ProcessStartInfo
+                    {
+                        WorkingDirectory = updateeDirPath,
+                        Arguments = _routedArgs,
+                        UseShellExecute = true // avoid sharing console window with updatee
+                    };
+                    
+                    startInfo.FileName = "dotnet";
+                    startInfo.Arguments = $"{_updateeFilePath} {_routedArgs}";
+                    WriteLog($"Restarting updatee [{startInfo.FileName} {startInfo.Arguments}]...");
 
-                WriteLog($"Restarting updatee [{startInfo.FileName} {startInfo.Arguments}]...");
+                    using var restartedUpdateeProcess = Process.Start(startInfo);
+                    WriteLog($"Restarted as pid:{restartedUpdateeProcess?.Id}.");
 
-                using var restartedUpdateeProcess = Process.Start(startInfo);
-                WriteLog($"Restarted as pid:{restartedUpdateeProcess?.Id}.");
+                }
+                else
+                {
+                    throw new Exception("platform unknown");
+                }
+               
             }
 
             // Delete package content directory

@@ -12,11 +12,15 @@ namespace Onova.Updater.Internal
             var sourceFilePaths = Directory.EnumerateFiles(sourceDirPath);
 
             // Copy them
+            Updater.WriteLog("staring to Copy");
             foreach (var sourceFilePath in sourceFilePaths)
             {
                 // Get destination file path
                 var destFileName = Path.GetFileName(sourceFilePath);
                 var destFilePath = Path.Combine(destDirPath, destFileName);
+                Updater.WriteLog($"SourceFilePath :" + sourceFilePath);
+                Updater.WriteLog($"DestinationFilePath :"+destFilePath);
+
                 File.Copy(sourceFilePath, destFilePath, overwrite);
             }
 

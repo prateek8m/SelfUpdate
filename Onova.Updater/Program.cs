@@ -1,4 +1,5 @@
 ﻿using Onova.Updater.Internal;
+using System;
 
 namespace Onova.Updater
 {
@@ -13,11 +14,14 @@ namespace Onova.Updater
             var packageContentDirPath = args[1];
             var restartUpdatee = bool.Parse(args[2]);
             var routedArgs = args[3].FromBase64().GetString();
-            System.Console.WriteLine("I am here");
-            using var updater = new Updater(updateeFilePath, packageContentDirPath, restartUpdatee, routedArgs);
-            updater.Run();
-            System.Console.WriteLine("readline opened"
-                );
+            Console.WriteLine("started copying");
+
+            using (var updater = new Updater(updateeFilePath, packageContentDirPath, restartUpdatee, routedArgs))
+            {
+                updater.Run();
+            }
+            Console.WriteLine("finished");
+            Console.ReadLine();
         }
     }
 }
